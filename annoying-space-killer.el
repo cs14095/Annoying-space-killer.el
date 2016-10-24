@@ -96,3 +96,5 @@
     (list beg end)))
 
 (provide 'annoying-space-killer)
+
+;;; annoying-space-killer.el ends here
