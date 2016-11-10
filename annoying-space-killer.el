@@ -74,27 +74,32 @@
   (interactive)
   (let ((region))
     (setq region (ask--define-region))
-    (kill-region (car region) (cadr region))))
+    (when region
+      (kill-region (car region) (cadr region)))))
 
 (defun ask--define-region ()
   (let ((init (point)) (cur (point)) (beg) (end))
-    (while (or (string= " "  (char-to-string (preceding-char)))
-	       (string= "\n" (char-to-string (preceding-char)))
-	       (string= "\t" (char-to-string (preceding-char))))
-      (backward-char)
-      (setq cur (point)))
-    (setq beg cur) ;; set beg
-    (goto-char init) ;; return
-    (while (or (string= " "  (char-to-string (preceding-char)))
-	       (string= "\n" (char-to-string (preceding-char)))
-	       (string= "\t" (char-to-string (preceding-char))))
-      (forward-char)
-      (setq cur (point)))
-    (backward-char)
-    (setq cur (point)) ;; adjust pos
-    (setq end cur)
-    (list beg end)))
+    (catch 'cant-find-space-error
+      (unless (or (string= " "  (char-to-string (following-char)))
+		  (string= "\n" (char-to-string (following-char)))
+		  (string= "\t" (char-to-string (following-char))))
+	(throw 'cant-find-space-error nil))
+      
+      (while (or (string= " "  (char-to-string (preceding-char)))
+		 (string= "\n" (char-to-string (preceding-char)))
+		 (string= "\t" (char-to-string (preceding-char))))
+	(backward-char)
+	(setq cur (point)))
+      (setq beg cur) ;; set beg
+      (goto-char init) ;; return
+      (while (or (string= " "  (char-to-string (following-char)))
+		 (string= "\n" (char-to-string (following-char)))
+		 (string= "\t" (char-to-string (following-char))))
+	(forward-char)
+	(setq cur (point)))
+       (setq cur (point)) ;; adjust pos
+      (setq end cur)
+      (goto-char init)
+      (list beg end))))
 
 (provide 'annoying-space-killer)
-
-;;; annoying-space-killer.el ends here
